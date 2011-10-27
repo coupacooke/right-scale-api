@@ -24,7 +24,7 @@ module RightScaleAPI
     end
 
     def duplicate
-      post '/duplicate'
+      resource(post '/duplicate')
     end
 
   end

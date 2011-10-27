@@ -21,14 +21,14 @@ module RightScaleAPI
       @attributes
     end
     
-    attributes [:id, :href, :tags, :created_at, :updated_at,:errors, :nickname]
+    attributes [:id, :href, :tags, :created_at, :updated_at,:errors, :nickname, :proxy_host, :proxy_port]
 
     # gets an object by id
     # @param id [Fixnum]
     def self.get id
       new :id => id
     end
-   
+    
     # creates a new object on RightScale
     # @param opts [Hash] attributes of the created object
     def self.create opts
@@ -37,7 +37,7 @@ module RightScaleAPI
       query_opts = opts_to_query_opts opts
 
       result = RightScaleAPI::Client.post(object.collection_uri, :body => query_opts)
-
+      
       if result.code.to_i != 201
         p object.collection_uri
         p query_opts
@@ -48,7 +48,7 @@ module RightScaleAPI
       end
 
       new object_opts.merge(result.merge(:href =>  result.headers['location']))
-    end
+    end  
 
     # The RightScale API name for the class
     def self.api_name
@@ -63,6 +63,17 @@ module RightScaleAPI
       unless id
         self.id = id_from_href href if href
       end
+    end
+    
+    def resource(result)
+      if result.code.to_i != 201
+        p result.code
+        p result.headers
+        puts result.inspect
+        raise "create failed"
+      end
+
+      self.class.get(id_from_href(result.headers['location'])).reload!
     end
     
     # Updates the object with the passed attributes
