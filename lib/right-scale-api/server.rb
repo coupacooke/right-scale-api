@@ -72,6 +72,26 @@ module RightScaleAPI
       post '/reboot'
     end
     
+    def run_script(right_script,opts={})
+      result = post('/run_script', :body => {
+          :server => { :right_script_href => right_script.href, :ignore_lock => true }.merge(opts)
+        })
+      if result.code.to_i != 201
+        p opts
+        p result.code
+        p result.headers
+        puts result.inspect
+        raise "run_script failed"
+      end
+    end
+    
+    def run_script_by_name(right_script_name,opts={})
+      right_script = server_template.right_scripts.find { |script| script.name == right_script_name }
+      raise "script does not exist: #{right_script_name}" unless right_script
+      
+      run_script(right_script,opts)
+    end
+    
     # Server Settings
     # for info: under Sub-resources on
     # http://support.rightscale.com/15-References/RightScale_API_Reference_Guide/02-Management/02-Servers
@@ -96,6 +116,11 @@ module RightScaleAPI
     # Is the server operational
     def operational?
       state == 'operational'
+    end
+    
+    def server_template
+      (template = ServerTemplate.new(:account => account, :id => id_from_href(server_template_href))).reload!
+      template
     end
     
     alias :running? :operational?

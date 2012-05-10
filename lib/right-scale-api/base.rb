@@ -25,8 +25,8 @@ module RightScaleAPI
 
     # gets an object by id
     # @param id [Fixnum]
-    def self.get id
-      new :id => id
+    def self.get id, opts={}
+      new({:id => id}.merge(opts))
     end
     
     # creates a new object on RightScale
@@ -73,7 +73,7 @@ module RightScaleAPI
         raise "create failed"
       end
 
-      self.class.get(id_from_href(result.headers['location'])).reload!
+      self.class.get(id_from_href(result.headers['location']), :account => account)
     end
     
     # Updates the object with the passed attributes
